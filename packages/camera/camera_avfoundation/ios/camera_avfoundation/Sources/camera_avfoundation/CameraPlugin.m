@@ -109,6 +109,26 @@ static FlutterError *FlutterErrorFromNSError(NSError *error) {
         [@[ AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera ]
             mutableCopy];
     if (@available(iOS 13.0, *)) {
+      // Why fork: https://sphealth.atlassian.net/wiki/spaces/TECH/pages/1907228691/Camera+Package+Fork
+      // More info on types: https://developer.apple.com/documentation/avfoundation/avcapturedevice/devicetype
+      AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
+        discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInTripleCamera, AVCaptureDeviceTypeBuiltInDualWideCamera, AVCaptureDeviceTypeBuiltInDualCamera]
+        mediaType:AVMediaTypeVideo
+        position:AVCaptureDevicePositionBack];
+
+      for (AVCaptureDevice *device in discoverySession.devices) {
+        if ([device.deviceType isEqual:AVCaptureDeviceTypeBuiltInTripleCamera]) {
+          [discoveryDevices insertObject:AVCaptureDeviceTypeBuiltInTripleCamera atIndex:0];
+          break;
+        } else if ([device.deviceType isEqual:AVCaptureDeviceTypeBuiltInDualWideCamera]) {
+          [discoveryDevices insertObject:AVCaptureDeviceTypeBuiltInDualWideCamera atIndex:0];
+          break;
+        } else if ([device.deviceType isEqual:AVCaptureDeviceTypeBuiltInDualCamera]) {
+          [discoveryDevices insertObject:AVCaptureDeviceTypeBuiltInDualCamera atIndex:0];
+          break;
+        }
+      }
+
       [discoveryDevices addObject:AVCaptureDeviceTypeBuiltInUltraWideCamera];
     }
     AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
